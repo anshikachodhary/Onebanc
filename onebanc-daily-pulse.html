@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OneBanc — Daily Pulse Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --forest:#14532D;
+    --terracotta:#C2410C;
+    --terracotta-tint:#FFF1E9;
+    --success:#0F766E;
+    --success-tint:#EFFBF9;
+    --warning:#B45309;
+    --warning-tint:#FEF3E2;
+    --bg:#FBF9F6;
+    --surface:#FFFFFF;
+    --text:#1C1917;
+    --text-sec:#6B6355;
+    --text-tert:#A39A89;
+    --border:#E7E1D6;
+    --r-sm:12px; --r-md:16px; --r-lg:20px; --r-xl:28px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--bg);}
+  body{ font-family:'Manrope',system-ui,sans-serif; color:var(--text); -webkit-font-smoothing:antialiased; }
+  ::selection{background:var(--terracotta); color:#fff;}
+
+  .case{ max-width:1320px; margin:0 auto; padding:0 64px 90px; }
+  @media(max-width:900px){ .case{ padding:0 24px 60px; } }
+
+  .top{ padding:56px 0 8px; }
+  .eyebrow{ font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--terracotta); margin-bottom:14px; }
+  .top h1{ font-family:'Fraunces',serif; font-weight:600; font-size:36px; color:var(--forest); letter-spacing:-0.01em; max-width:760px; line-height:1.2; }
+  .top .sub{ font-size:15.5px; color:var(--text-sec); margin-top:12px; max-width:640px; line-height:1.6; }
+
+  .note{ margin-top:36px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); padding:32px 36px; display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+  @media(max-width:900px){ .note{ grid-template-columns:1fr; } }
+  .note h4{ font-size:11.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--terracotta); margin-bottom:10px; }
+  .note p{ font-size:14.5px; line-height:1.7; color:var(--text-sec); }
+
+  .section-title{ margin:64px 0 6px; }
+  .section-title h2{ font-family:'Fraunces',serif; font-weight:600; font-size:24px; color:var(--forest); }
+  .section-title p{ font-size:14px; color:var(--text-sec); margin-top:4px; }
+
+  .phones-row{ display:flex; gap:40px; margin-top:36px; overflow-x:auto; padding-bottom:24px; }
+  .phone-col{ flex:0 0 auto; }
+  .phone-label{ display:flex; align-items:baseline; gap:10px; margin-bottom:14px; }
+  .phone-label .time{ font-size:24px; font-weight:800; color:var(--forest); letter-spacing:-0.02em; }
+  .phone-label .verb{ font-family:'Fraunces',serif; font-style:italic; font-weight:500; font-size:16px; color:var(--terracotta); }
+  .phone-question{ font-size:13px; color:var(--text-sec); margin-bottom:18px; max-width:340px; line-height:1.5;}
+
+  .phone{ width:390px; height:844px; background:#1C1917; border-radius:52px; padding:14px; box-shadow:0 40px 80px -30px rgba(28,25,23,.4), 0 0 0 1px rgba(28,25,23,.06); position:relative; }
+  .phone::before{ content:""; position:absolute; top:14px; left:50%; transform:translateX(-50%); width:120px; height:26px; background:#1C1917; border-radius:0 0 18px 18px; z-index:5; }
+  .screen{ width:100%; height:100%; background:var(--bg); border-radius:38px; overflow:hidden; position:relative; display:flex; flex-direction:column; }
+  .statusbar{ height:48px; flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; padding:0 30px; font-size:14px; font-weight:600; color:var(--text); }
+  .statusbar .icons{ display:flex; gap:6px; align-items:center; }
+  .scroll{ flex:1; overflow-y:auto; padding:6px 20px 30px; }
+  .scroll::-webkit-scrollbar{ display:none; }
+
+  .app-header{ display:flex; align-items:center; justify-content:space-between; padding:6px 2px 18px; }
+  .greeting{ font-size:15px; font-weight:600; color:var(--text-sec); }
+  .greeting b{ color:var(--text); font-weight:700; }
+  .avatar{ width:38px; height:38px; border-radius:50%; background:var(--forest); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-family:'Fraunces',serif; }
+
+  .balance-block{ padding:4px 2px 22px; }
+  .balance-label{ font-size:13px; color:var(--text-sec); font-weight:500; }
+  .balance-amt{ font-family:'Fraunces',serif; font-size:40px; font-weight:600; color:var(--text); letter-spacing:-0.01em; margin-top:4px; }
+  .balance-amt small{ font-family:'Manrope',sans-serif; font-size:16px; font-weight:600; color:var(--text-tert); margin-left:2px; }
+
+  .pulse{ border-radius:var(--r-xl); padding:22px 22px 24px; position:relative; overflow:hidden; border:1px solid var(--border); margin-bottom:18px; }
+  .p-plan{ background:linear-gradient(160deg,#FFF7ED 0%, #FFFFFF 55%); }
+  .p-guide{ background:linear-gradient(160deg,#FFF1E9 0%, #FFFFFF 55%); }
+  .p-reflect{ background:linear-gradient(160deg,#EFFBF9 0%, #FFFFFF 55%); }
+  .p-tag{ display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--text-sec); }
+  .p-headline{ font-family:'Fraunces',serif; font-size:21px; font-weight:600; color:var(--text); margin-top:10px; letter-spacing:-0.01em; }
+  .p-sub{ font-size:13px; color:var(--text-sec); margin-top:4px; }
+  .p-cta{ margin-top:16px; display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--terracotta); background:#fff; border:1px solid var(--border); padding:9px 16px; border-radius:999px; }
+
+  .plan-breakdown{ display:flex; gap:8px; margin-top:16px; }
+  .pb-seg{ height:6px; border-radius:4px; }
+  .plan-rows{ margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+  .plan-row{ display:flex; justify-content:space-between; font-size:13px; color:var(--text-sec); }
+  .plan-row span:last-child{ font-weight:600; color:var(--text); }
+
+  .progress-track{ height:8px; background:var(--border); border-radius:6px; overflow:hidden; margin-top:14px; }
+  .progress-fill{ height:100%; border-radius:6px; background:var(--terracotta); }
+
+  .section-header{ display:flex; align-items:center; justify-content:space-between; margin:24px 2px 12px; }
+  .section-header h4{ font-size:14px; font-weight:700; color:var(--text); }
+  .section-header a{ font-size:12px; font-weight:600; color:var(--terracotta); }
+
+  .card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:16px; margin-bottom:10px; }
+  .insight-card{ border-radius:var(--r-lg); padding:18px 18px 16px; margin-bottom:16px; border:1px solid var(--border); }
+  .insight-emoji{ font-size:20px; }
+  .insight-title{ font-size:14.5px; font-weight:700; color:var(--text); margin-top:8px; }
+  .insight-text{ font-size:13px; color:var(--text-sec); line-height:1.55; margin-top:5px; }
+  .insight-basis{ font-size:11px; color:var(--text-tert); margin-top:8px; font-style:italic; }
+  .insight-cta{ font-size:12.5px; font-weight:700; color:var(--terracotta); margin-top:12px; display:inline-block; }
+
+  .row-item{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
+  .row-item:last-child{ border-bottom:none; }
+  .row-icon{ width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:16px; flex:0 0 auto; }
+  .row-main{ flex:1; }
+  .row-title{ font-size:13.5px; font-weight:600; color:var(--text); }
+  .row-sub{ font-size:11.5px; color:var(--text-tert); margin-top:2px; }
+  .row-amt{ font-size:13.5px; font-weight:700; color:var(--text); }
+
+  .quick-actions{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:18px 0 22px; }
+  .qa{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r-md); padding:14px 6px; text-align:center; }
+  .qa .qi{ font-size:18px; }
+  .qa .qt{ font-size:10.5px; font-weight:600; color:var(--text-sec); margin-top:6px; }
+
+  .cat-list{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+  .cat-item{ display:flex; align-items:center; gap:10px; }
+  .cat-dot{ width:8px; height:8px; border-radius:50%; }
+  .cat-name{ flex:1; font-size:13px; color:var(--text-sec); }
+  .cat-amt{ font-size:13px; font-weight:700; color:var(--text); }
+  .breakdown-bar{ display:flex; height:14px; border-radius:8px; overflow:hidden; margin-top:6px; }
+
+  .badge{ display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:5px 10px; border-radius:999px; }
+  .badge.success{ background:var(--success-tint); color:var(--success); }
+  .streak-chip{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--warning); background:var(--warning-tint); padding:6px 12px; border-radius:999px; margin-top:10px; }
+
+  .cta-primary{ display:block; width:100%; text-align:center; background:var(--forest); color:#fff; font-size:14.5px; font-weight:700; padding:16px; border-radius:14px; margin-top:8px; }
+
+  .bottomnav{ flex:0 0 auto; display:flex; justify-content:space-around; align-items:center; padding:12px 8px 24px; background:#fff; border-top:1px solid var(--border); }
+  .navitem{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .navitem .ni-icon{ font-size:19px; opacity:.4; }
+  .navitem .ni-text{ font-size:10px; font-weight:600; color:var(--text-tert); }
+  .navitem.active .ni-icon{ opacity:1; }
+  .navitem.active .ni-text{ color:var(--forest); }
+  .navitem.active .ni-icon::after{ content:""; display:block; width:4px; height:4px; border-radius:50%; background:var(--terracotta); margin:3px auto 0; }
+
+  table{ width:100%; border-collapse:collapse; min-width:640px; }
+  th{ text-align:left; padding:12px 10px; font-size:14px; color:var(--forest); font-weight:700; }
+  th:first-child{ font-size:12px; color:var(--text-tert); text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+  td{ padding:12px 10px; font-size:13.5px; color:var(--text-sec); border-bottom:1px solid var(--border); }
+  td:first-child{ font-weight:600; color:var(--text); }
+  thead tr{ border-bottom:2px solid var(--forest); }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--border); font-size:12.5px; color:var(--text-tert); }
+</style>
+</head>
+<body>
+<div class="case">
+
+  <div class="top">
+    <div class="eyebrow">OneBanc · Dashboard Assignment</div>
+    <h1>Daily Pulse — a dashboard that follows your day, not your login.</h1>
+    <div class="sub">Three states of the OneBanc home screen, each tuned to a different hour and a different question, built around a single recurring module called the Daily Pulse.</div>
+  </div>
+
+  <div class="note">
+    <div>
+      <h4>Approach &amp; Assumptions</h4>
+      <p>My starting point was that a banking app shouldn't feel the same at 9 AM as it does at 5 PM, because the person opening it isn't in the same place either. At 9 AM, OneBanc helps Meera <b>set up</b> her day — a soft spending outlook based on her typical Tuesday, plus what's due. By 2 PM, after a few UPI payments, the app shifts into <b>tracking</b> mode — a live read on pace, and the one transaction that nudged her off her usual rhythm. At 5 PM it becomes a <b>wind-down</b> screen — a clean recap that credits her for a good day and quietly sets tomorrow's baseline. I assumed a working professional in her late 20s who pays for most things through UPI in small amounts, checks her phone often, but has never actively "budgeted" in the traditional sense.</p>
+    </div>
+    <div>
+      <h4>Why It Changes, &amp; Why Users Return</h4>
+      <p>The three screens shift along one axis — time direction — starting with what's coming, moving to what's happening, ending with what happened. That alone gives each screen a distinct job: forecast, track, review. Nothing is padded with meaningless variety; every card earns its place because it answers what she'd actually be wondering at that hour. The reason to come back isn't a streak counter or a push notification — it's that the app's one answer is only valid for a couple of hours before it needs refreshing, the same way checking the weather again makes sense once the sky's actually changed.</p>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <h2>The Three Dashboards</h2>
+    <p>Same product, three distinct moments — different hierarchy, tone and call to action.</p>
+  </div>
+
+  <div class="phones-row">
+
+    <!-- 9 AM -->
+    <div class="phone-col">
+      <div class="phone-label"><span class="time">9:00 AM</span><span class="verb">— Set up</span></div>
+      <div class="phone-question">"What's my day looking like, money-wise?"</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><span>9:00</span><div class="icons">●●●&nbsp;&nbsp;5G&nbsp;&nbsp;🔋</div></div>
+          <div class="scroll">
+            <div class="app-header">
+              <div class="greeting">Morning, <b>Meera</b> 🌤️</div>
+              <div class="avatar">M</div>
+            </div>
+            <div class="balance-block">
+              <div class="balance-label">Ready to spend today</div>
+              <div class="balance-amt">₹6,150</div>
+            </div>
+            <div class="pulse p-plan">
+              <div class="p-tag">🌤️ Daily Pulse · Outlook</div>
+              <div class="p-headline">₹950 expected today</div>
+              <div class="p-sub">Typical for a Tuesday</div>
+              <div class="plan-breakdown">
+                <div class="pb-seg" style="width:32%; background:var(--terracotta);"></div>
+                <div class="pb-seg" style="width:29%; background:#F4A261;"></div>
+                <div class="pb-seg" style="width:39%; background:#FBD9B8;"></div>
+              </div>
+              <div class="plan-rows">
+                <div class="plan-row"><span>🚇 Commute</span><span>₹180</span></div>
+                <div class="plan-row"><span>🥗 Meals</span><span>₹420</span></div>
+                <div class="plan-row"><span>🛒 Groceries + other</span><span>₹350</span></div>
+              </div>
+              <div class="p-cta">View outlook →</div>
+            </div>
+            <div class="section-header"><h4>Due today</h4><a>See all</a></div>
+            <div class="card">
+              <div class="row-item"><div class="row-icon" style="background:var(--warning-tint);">📶</div><div class="row-main"><div class="row-title">Broadband</div><div class="row-sub">Auto-debits today</div></div><div class="row-amt">₹799</div></div>
+              <div class="row-item"><div class="row-icon" style="background:var(--terracotta-tint);">🎧</div><div class="row-main"><div class="row-title">Spotify</div><div class="row-sub">Renews today</div></div><div class="row-amt">₹119</div></div>
+              <div class="row-item"><div class="row-icon" style="background:var(--success-tint);">🏋️</div><div class="row-main"><div class="row-title">Gym membership</div><div class="row-sub">Due in 3 days</div></div><div class="row-amt">₹1,500</div></div>
+            </div>
+            <div class="insight-card" style="background:var(--success-tint);">
+              <div class="insight-emoji">🌱</div>
+              <div class="insight-title">Your last three Tuesdays came in under ₹900.</div>
+              <div class="insight-basis">Based on your last 6 weeks.</div>
+              <div class="insight-cta">See trend →</div>
+            </div>
+            <div class="section-header"><h4>Quick actions</h4></div>
+            <div class="quick-actions">
+              <div class="qa"><div class="qi">↗️</div><div class="qt">Pay</div></div>
+              <div class="qa"><div class="qi">▦</div><div class="qt">Scan</div></div>
+              <div class="qa"><div class="qi">🧾</div><div class="qt">Bills</div></div>
+              <div class="qa"><div class="qi">＋</div><div class="qt">Add Money</div></div>
+            </div>
+          </div>
+          <div class="bottomnav">
+            <div class="navitem active"><div class="ni-icon">⌂</div><div class="ni-text">Home</div></div>
+            <div class="navitem"><div class="ni-icon">↗</div><div class="ni-text">Pay</div></div>
+            <div class="navitem"><div class="ni-icon">☰</div><div class="ni-text">Activity</div></div>
+            <div class="navitem"><div class="ni-icon">◔</div><div class="ni-text">Insights</div></div>
+            <div class="navitem"><div class="ni-icon">◯</div><div class="ni-text">You</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 PM -->
+    <div class="phone-col">
+      <div class="phone-label"><span class="time">2:00 PM</span><span class="verb">— Track</span></div>
+      <div class="phone-question">"Am I still on pace?"</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><span>14:00</span><div class="icons">●●●&nbsp;&nbsp;5G&nbsp;&nbsp;🔋</div></div>
+          <div class="scroll">
+            <div class="app-header">
+              <div class="greeting">Right on track 🙂</div>
+              <div class="avatar">M</div>
+            </div>
+            <div class="balance-block">
+              <div class="balance-label">Spent so far today</div>
+              <div class="balance-amt">₹610<small>· ₹340 left in outlook</small></div>
+              <div class="progress-track"><div class="progress-fill" style="width:64%;"></div></div>
+              <div style="display:flex; justify-content:space-between; margin-top:6px;">
+                <span style="font-size:11.5px; color:var(--text-tert); font-weight:600;">₹610 of ₹950</span>
+                <span style="font-size:11.5px; color:var(--terracotta); font-weight:700;">64%</span>
+              </div>
+            </div>
+            <div class="pulse p-guide">
+              <div class="p-tag">📍 Daily Pulse · Live</div>
+              <div class="p-headline">₹610 spent · ₹340 to go</div>
+              <div class="p-sub">Tracking close to a typical Tuesday</div>
+            </div>
+            <div class="insight-card" style="background:var(--warning-tint);">
+              <div class="insight-emoji">🥗</div>
+              <div class="insight-title">Lunch nudged today's meals total up</div>
+              <div class="insight-text">You've spent 28% more on meals today than your recent Tuesday average.</div>
+              <div class="insight-basis">Based on your last 6 weeks.</div>
+              <div class="insight-cta">See meal spending →</div>
+            </div>
+            <div class="section-header"><h4>Today by category</h4></div>
+            <div class="card">
+              <div class="cat-list">
+                <div class="cat-item"><div class="cat-dot" style="background:var(--warning);"></div><div class="cat-name">Meals</div><div class="cat-amt">₹380</div></div>
+                <div class="cat-item"><div class="cat-dot" style="background:var(--terracotta);"></div><div class="cat-name">Commute</div><div class="cat-amt">₹150</div></div>
+                <div class="cat-item"><div class="cat-dot" style="background:var(--text-tert);"></div><div class="cat-name">Other</div><div class="cat-amt">₹80</div></div>
+              </div>
+            </div>
+            <div class="section-header"><h4>Recent activity</h4><a>See all</a></div>
+            <div class="card">
+              <div class="row-item"><div class="row-icon" style="background:var(--warning-tint);">🍛</div><div class="row-main"><div class="row-title">Behrouz Biryani</div><div class="row-sub">1:20 PM</div></div><div class="row-amt">₹380</div></div>
+              <div class="row-item"><div class="row-icon" style="background:var(--terracotta-tint);">🚇</div><div class="row-main"><div class="row-title">Metro top-up</div><div class="row-sub">10:40 AM</div></div><div class="row-amt">₹150</div></div>
+            </div>
+            <div class="insight-card" style="background:var(--surface);">
+              <div class="insight-emoji">🍵</div>
+              <div class="insight-title">You usually spend ₹90–₹140 on evening chai runs.</div>
+              <div class="insight-cta">Explore offers →</div>
+            </div>
+          </div>
+          <div class="bottomnav">
+            <div class="navitem active"><div class="ni-icon">⌂</div><div class="ni-text">Home</div></div>
+            <div class="navitem"><div class="ni-icon">↗</div><div class="ni-text">Pay</div></div>
+            <div class="navitem"><div class="ni-icon">☰</div><div class="ni-text">Activity</div></div>
+            <div class="navitem"><div class="ni-icon">◔</div><div class="ni-text">Insights</div></div>
+            <div class="navitem"><div class="ni-icon">◯</div><div class="ni-text">You</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 PM -->
+    <div class="phone-col">
+      <div class="phone-label"><span class="time">5:00 PM</span><span class="verb">— Wind down</span></div>
+      <div class="phone-question">"How did today actually go?"</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><span>17:00</span><div class="icons">●●●&nbsp;&nbsp;5G&nbsp;&nbsp;🔋</div></div>
+          <div class="scroll">
+            <div class="app-header">
+              <div class="greeting">Today, wrapped 🌇</div>
+              <div class="avatar">M</div>
+            </div>
+            <div class="balance-block">
+              <div class="balance-label">Spent today</div>
+              <div class="balance-amt">₹870</div>
+              <span class="badge success">▼ ₹80 under your Tuesday average</span>
+            </div>
+            <div class="pulse p-reflect">
+              <div class="p-tag">🌇 Daily Pulse · Recap</div>
+              <div class="p-headline">₹80 under your usual Tuesday</div>
+              <div class="p-sub">Meals ran high, everything else stayed light</div>
+            </div>
+            <div class="section-header"><h4>Where it went</h4></div>
+            <div class="card">
+              <div class="breakdown-bar">
+                <div style="width:44%; background:var(--warning);"></div>
+                <div style="width:22%; background:var(--terracotta);"></div>
+                <div style="width:20%; background:#7C9885;"></div>
+                <div style="width:14%; background:var(--text-tert);"></div>
+              </div>
+              <div class="cat-list" style="margin-top:16px;">
+                <div class="cat-item"><div class="cat-dot" style="background:var(--warning);"></div><div class="cat-name">Meals</div><div class="cat-amt">₹380</div></div>
+                <div class="cat-item"><div class="cat-dot" style="background:var(--terracotta);"></div><div class="cat-name">Commute</div><div class="cat-amt">₹190</div></div>
+                <div class="cat-item"><div class="cat-dot" style="background:#7C9885;"></div><div class="cat-name">Groceries</div><div class="cat-amt">₹175</div></div>
+                <div class="cat-item"><div class="cat-dot" style="background:var(--text-tert);"></div><div class="cat-name">Other</div><div class="cat-amt">₹125</div></div>
+              </div>
+            </div>
+            <div class="insight-card" style="background:var(--success-tint);">
+              <div class="insight-emoji">🎯</div>
+              <div class="insight-title">You closed ₹80 under your usual Tuesday.</div>
+              <div class="streak-chip">🔥 2-day streak</div>
+            </div>
+            <div class="insight-card" style="background:var(--surface);">
+              <div class="insight-emoji">📈</div>
+              <div class="insight-title">Most of today's spending happened between 1–2 PM.</div>
+              <div class="insight-cta">See the pattern →</div>
+            </div>
+            <div class="section-header"><h4>Tomorrow</h4></div>
+            <div class="card" style="text-align:center; padding:22px 16px;">
+              <div style="font-size:14px; font-weight:600; color:var(--text);">Set a lighter goal for tomorrow?</div>
+              <a class="cta-primary" style="margin-top:14px;">Set tomorrow's outlook</a>
+            </div>
+          </div>
+          <div class="bottomnav">
+            <div class="navitem active"><div class="ni-icon">⌂</div><div class="ni-text">Home</div></div>
+            <div class="navitem"><div class="ni-icon">↗</div><div class="ni-text">Pay</div></div>
+            <div class="navitem"><div class="ni-icon">☰</div><div class="ni-text">Activity</div></div>
+            <div class="navitem"><div class="ni-icon">◔</div><div class="ni-text">Insights</div></div>
+            <div class="navitem"><div class="ni-icon">◯</div><div class="ni-text">You</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">
+    <h2>How The Three States Differ</h2>
+    <p>Each screen has its own job — not the same cards with new numbers.</p>
+  </div>
+  <div style="overflow-x:auto; margin-top:20px;">
+    <table>
+      <thead>
+        <tr><th>—</th><th>9 AM · Set up</th><th>2 PM · Track</th><th>5 PM · Wind down</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Time focus</td><td>What's ahead</td><td>What's happening</td><td>What happened</td></tr>
+        <tr><td>Leads with</td><td>Bills due today</td><td>Live spend vs. outlook</td><td>Full-day recap</td></tr>
+        <tr><td>Core visual</td><td>Spending outlook</td><td>Live progress bar</td><td>Category breakdown</td></tr>
+        <tr><td>Emotional tone</td><td>Fresh, unhurried</td><td>Alert, helpful</td><td>Settled, rewarding</td></tr>
+        <tr><td>Primary CTA</td><td>View outlook</td><td>See meal spending</td><td>Set tomorrow's outlook</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer>OneBanc — Daily Pulse. UX/UI dashboard assignment.</footer>
+
+</div>
+</body>
+</html>
